@@ -1,0 +1,17 @@
+#!/bin/bash
+COUNTER=0 					
+SIZE=$2
+START=$1
+COUNTER=$START
+echo -en "\xFE\xFE\xFE\xFE" > /dev/ttyUSB0	# Синхронизируем поток данных. После исполнения устройство готово принять младший байт адреса
+while [ "$COUNTER" -lt $SIZE ]
+do
+    let HR=COUNTER/256
+    let LR=COUNTER%256
+    hLR=`printf "%02X" $LR`
+    hHR=`printf "%02X" $HR`
+    echo -en "\xFF\x$hLR\x$hHR\x00\x00" > /dev/ttyUSB0 	# Паттерн чтения байта  $hHR$hLR
+
+    let COUNTER=COUNTER+1
+done
+echo -en "\xFE" > /dev/ttyUSB0			#  Перевести контроллер в состяние запрета записи данных
